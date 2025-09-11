@@ -87,7 +87,7 @@ export default function PersonalInfoPage() {
               Tell us about yourself
             </h1>
             <p className="text-sm text-gray-600">
-              This is how you&apos;ll appear on Wonnda
+              This is how you&apos;ll appear on PrivateLabelify
             </p>
           </div>
 
