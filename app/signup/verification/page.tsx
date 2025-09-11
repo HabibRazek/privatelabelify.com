@@ -54,7 +54,7 @@ export default function VerificationPage() {
               Check your email
             </h1>
             <p className="text-sm text-gray-600">
-              We've sent a 4-digit code to <span className="font-medium">{email}</span>
+              We&apos;ve sent a 4-digit code to <span className="font-medium">{email}</span>
             </p>
           </div>
 
@@ -98,8 +98,6 @@ export default function VerificationPage() {
             </div>
           </div>
         </div>
-      </div>
-    </div>
       </div>
     </div>
   );

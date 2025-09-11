@@ -42,8 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         return {
           id: user[0].id,
           email: user[0].email,
-          firstName: user[0].firstName,
-          lastName: user[0].lastName,
+          firstName: user[0].firstName || undefined,
+          lastName: user[0].lastName || undefined,
         };
       },
     }),
@@ -53,7 +53,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
   callbacks: {
     async jwt({ token, user }) {
