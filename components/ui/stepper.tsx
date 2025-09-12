@@ -7,7 +7,7 @@ interface StepperProps {
 
 export function Stepper({ currentStep, totalSteps }: StepperProps) {
   return (
-    <div className="w-full bg-white border-b border-gray-200 px-4 py-3">
+    <div className="w-full bg-white px-4 py-3">
       <div className="max-w-md mx-auto">
         <div className="flex items-center">
           {Array.from({ length: totalSteps }, (_, index) => {
@@ -19,7 +19,7 @@ export function Stepper({ currentStep, totalSteps }: StepperProps) {
                 {/* Progress Bar */}
                 <div
                   className={`h-1 flex-1 rounded-full ${
-                    isActive ? 'bg-orange-500' : 'bg-gray-200'
+                    isActive ? 'bg-blue-800' : 'bg-gray-200'
                   }`}
                 />
                 {/* Spacing between bars */}

@@ -4,8 +4,10 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Menu, X, Calendar, Ticket, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
@@ -96,6 +98,7 @@ export default function Navbar() {
               </button>
               <Button
                 size="lg"
+                onClick={() => router.push('/auth/signup')}
                 className="bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-950 text-white px-6 py-2.5 font-bold shadow-lg hover:shadow-blue-800/50 transition-all duration-300 transform hover:scale-105 rounded-lg border-0"
                 style={{
                   textShadow: '0 1px 2px rgba(0,0,0,0.5)'
@@ -126,6 +129,7 @@ export default function Navbar() {
               <div className="pt-4 border-t border-gray-200">
                 <Button
                   size="lg"
+                  onClick={() => router.push('/auth/signup')}
                   className="w-full bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-950 text-white px-4 py-3 font-bold shadow-lg hover:shadow-blue-800/50 transition-all duration-300 transform hover:scale-105 rounded-lg border-0"
                   style={{
                     textShadow: '0 1px 2px rgba(0,0,0,0.5)'

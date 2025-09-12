@@ -47,7 +47,7 @@ export default function HeroSection() {
         <div className="flex justify-center mb-16">
           <Button
             size="lg"
-            onClick={() => router.push('/get-started')}
+            onClick={() => router.push('/auth/signup')}
             className="bg-gradient-to-r from-blue-800 to-blue-900 hover:from-blue-900 hover:to-blue-950 text-white px-10 py-5 text-lg font-bold shadow-2xl hover:shadow-blue-800/60 transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 rounded-xl border-0"
             style={{
               textShadow: '0 2px 4px rgba(0,0,0,0.6)'

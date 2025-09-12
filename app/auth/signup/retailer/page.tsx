@@ -1,0 +1,726 @@
+'use client';
+
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Stepper } from "@/components/ui/stepper";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
+import { Eye, EyeOff, Check, RotateCcw, ArrowLeft, Info } from "lucide-react";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
+
+export default function RetailerSignupPage() {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [showPassword, setShowPassword] = useState(false);
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    otp: '',
+    firstName: '',
+    lastName: '',
+    phone: '',
+    companyName: '',
+    address: '',
+    companyType: '',
+    annualRevenue: '',
+    website: '',
+    businessGoals: [] as string[],
+    hasLaunchedProduct: null as boolean | null,
+    interestedCategories: [] as string[],
+    productDescription: '',
+    autoCreateRequest: true,
+    getDirectIntroductions: true,
+  });
+
+  // Password validation rules
+  const passwordRules = [
+    { rule: 'At least 12 characters', check: formData.password.length >= 12 },
+    { rule: 'Includes an uppercase letter (A-Z)', check: /[A-Z]/.test(formData.password) },
+    { rule: 'Includes a number (0-9)', check: /[0-9]/.test(formData.password) },
+    { rule: 'Includes a special character (!@#$%^&*)', check: /[!@#$%^&*]/.test(formData.password) },
+  ];
+
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleBusinessGoalToggle = (goal: string) => {
+    setFormData(prev => ({
+      ...prev,
+      businessGoals: prev.businessGoals.includes(goal)
+        ? prev.businessGoals.filter(g => g !== goal)
+        : [...prev.businessGoals, goal]
+    }));
+  };
+
+  const handleProductLaunchSelection = (hasLaunched: boolean) => {
+    setFormData(prev => ({ ...prev, hasLaunchedProduct: hasLaunched }));
+  };
+
+  const handleCategoryToggle = (category: string) => {
+    setFormData(prev => ({
+      ...prev,
+      interestedCategories: prev.interestedCategories.includes(category)
+        ? prev.interestedCategories.filter(c => c !== category)
+        : [...prev.interestedCategories, category]
+    }));
+  };
+
+  const handleToggleOption = (field: 'autoCreateRequest' | 'getDirectIntroductions') => {
+    setFormData(prev => ({ ...prev, [field]: !prev[field] }));
+  };
+
+  const handleContinue = () => {
+    // Validate form and move to next step
+    if (currentStep < 8) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleBack = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const handleResendCode = () => {
+    // Simulate resending OTP code
+    console.log('Resending OTP code to:', formData.email);
+  };
+
+  const isPasswordValid = passwordRules.every(rule => rule.check);
+  const canContinueStep1 = formData.email && formData.password && isPasswordValid;
+  const canContinueStep2 = formData.otp.length === 4;
+  const canContinueStep3 = formData.firstName && formData.lastName && formData.phone;
+  const canContinueStep4 = formData.companyName && formData.address && formData.companyType && formData.annualRevenue;
+  const canContinueStep5 = formData.businessGoals.length > 0;
+  const canContinueStep6 = formData.hasLaunchedProduct !== null;
+  const canContinueStep7 = formData.interestedCategories.length > 0;
+  const canContinueStep8 = formData.productDescription.trim().length > 0;
+
+  // Company type options
+  const companyTypes = [
+    'Agency',
+    'Consultant',
+    'Corporation',
+    'Creator',
+    'D2C Brand',
+    'Importer',
+    'Marketplace',
+    'Online Retailer',
+    'Retailer',
+    'Small Business',
+    'Wholesaler'
+  ];
+
+  // Annual revenue options
+  const revenueRanges = [
+    'Under $100K',
+    '$100K - $500K',
+    '$500K - $1M',
+    '$1M - $5M',
+    '$5M - $10M',
+    '$10M - $50M',
+    '$50M+',
+    'Prefer not to say'
+  ];
+
+  // Business goals options
+  const businessGoals = {
+    discovery: [
+      'Find suppliers',
+      'Source products',
+      'Source packaging',
+      'Source raw materials'
+    ],
+    operations: [
+      'Manage suppliers',
+      'Finance inventory',
+      'Streamline sourcing'
+    ]
+  };
+
+  // Product categories
+  const productCategories = [
+    'Beauty & Personal Care',
+    'Fashion',
+    'Food & Beverages',
+    'Health & Supplements',
+    'Home & Living',
+    'Pet Supplies',
+    'Packaging'
+  ];
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md bg-white shadow-lg">
+        {/* Progress Stepper */}
+        <Stepper currentStep={currentStep} totalSteps={8} />
+
+        <CardHeader className={`pb-4 ${(currentStep >= 4) ? 'text-left' : 'text-center'}`}>
+          {(currentStep >= 4) && (
+            <button
+              onClick={handleBack}
+              className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 mb-4"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back</span>
+            </button>
+          )}
+          <CardTitle className="text-xl font-semibold text-gray-900">
+            {currentStep === 1 ? 'Create your account' :
+             currentStep === 2 ? 'Check your email' :
+             currentStep === 3 ? 'Tell us about yourself' :
+             currentStep === 4 ? 'Tell us about your company' :
+             currentStep === 5 ? 'What are you looking to do with PrivateLabelify?' :
+             currentStep === 6 ? 'Have you launched a product before?' :
+             currentStep === 7 ? 'What are you interested in?' :
+             'What product or packaging are you sourcing?'}
+          </CardTitle>
+          {currentStep === 5 && (
+            <p className="text-sm text-gray-600 mt-1">
+              Select all that apply - we'll personalize your experience accordingly
+            </p>
+          )}
+          {currentStep === 7 && (
+            <p className="text-sm text-gray-600 mt-1">
+              Choose the categories that are relevant to you
+            </p>
+          )}
+          {currentStep === 8 && (
+            <p className="text-sm text-gray-600 mt-1">
+              Be specific so we can match you with the right suppliers
+            </p>
+          )}
+          {currentStep <= 3 && (
+            <p className="text-sm text-gray-600 mt-1">
+              {currentStep === 1
+                ? 'Use your work email and create a password to get started'
+                : currentStep === 2 ? (
+                  <>
+                    We've sent a 4-digit code to{' '}
+                    <span className="font-medium text-blue-800">{formData.email}</span>
+                  </>
+                ) : 'This is how you\'ll appear on PrivateLabelify'
+              }
+            </p>
+          )}
+        </CardHeader>
+
+        <CardContent className="space-y-4">
+          {currentStep === 1 ? (
+            <>
+              {/* Work Email */}
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                  Work email
+                </Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="name@company.com"
+                  value={formData.email}
+                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Password */}
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Set password"
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    className="w-full pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Password Requirements */}
+              <div className="space-y-2">
+                {passwordRules.map((rule, index) => (
+                  <div key={index} className="flex items-center space-x-2 text-xs">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
+                      rule.check ? 'bg-green-500' : 'bg-gray-200'
+                    }`}>
+                      {rule.check && <Check className="h-2.5 w-2.5 text-white" />}
+                    </div>
+                    <span className={rule.check ? 'text-green-600' : 'text-gray-500'}>
+                      {rule.rule}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep1}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+              >
+                Continue
+              </Button>
+            </>
+          ) : currentStep === 2 ? (
+            <>
+              {/* OTP Input */}
+              <div className="flex justify-center mb-6">
+                <InputOTP
+                  maxLength={4}
+                  value={formData.otp}
+                  onChange={(value) => handleInputChange('otp', value)}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
+                    <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
+                    <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
+                    <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep2}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mb-4"
+              >
+                Continue
+              </Button>
+
+              {/* Resend Code */}
+              <div className="text-center space-y-2">
+                <button
+                  onClick={handleResendCode}
+                  className="flex items-center justify-center space-x-2 text-sm text-blue-800 hover:text-blue-900 mx-auto"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                  <span>Resend code</span>
+                </button>
+
+                <button className="text-sm text-blue-600 hover:text-blue-700">
+                  Change email address
+                </button>
+              </div>
+            </>
+          ) : currentStep === 3 ? (
+            <>
+              {/* First Name */}
+              <div className="space-y-2">
+                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                  First name
+                </Label>
+                <Input
+                  id="firstName"
+                  type="text"
+                  placeholder="Alex"
+                  value={formData.firstName}
+                  onChange={(e) => handleInputChange('firstName', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Last Name */}
+              <div className="space-y-2">
+                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                  Last name
+                </Label>
+                <Input
+                  id="lastName"
+                  type="text"
+                  placeholder="Taylor"
+                  value={formData.lastName}
+                  onChange={(e) => handleInputChange('lastName', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-2">
+                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
+                  Phone
+                </Label>
+                <div className="phone-input-container">
+                  <PhoneInput
+                    placeholder="1512 3456789"
+                    value={formData.phone}
+                    onChange={(value) => handleInputChange('phone', value || '')}
+                    defaultCountry="US"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep3}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+              >
+                Continue
+              </Button>
+            </>
+          ) : currentStep === 4 ? (
+            <>
+              {/* Company Name */}
+              <div className="space-y-2">
+                <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+                  Company name
+                </Label>
+                <Input
+                  id="companyName"
+                  type="text"
+                  placeholder="e.g. Freshly Foods"
+                  value={formData.companyName}
+                  onChange={(e) => handleInputChange('companyName', e.target.value)}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Address */}
+              <div className="space-y-2">
+                <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                  Address
+                </Label>
+                <AddressAutocomplete
+                  value={formData.address}
+                  onChange={(value) => handleInputChange('address', value)}
+                  placeholder="Search address..."
+                  className="w-full"
+                />
+              </div>
+
+              {/* Company Type */}
+              <div className="space-y-2">
+                <Label htmlFor="companyType" className="text-sm font-medium text-gray-700">
+                  Company type
+                </Label>
+                <Select value={formData.companyType} onValueChange={(value) => handleInputChange('companyType', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a company type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {companyTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Annual Revenue */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Label htmlFor="annualRevenue" className="text-sm font-medium text-gray-700">
+                    Annual revenue
+                  </Label>
+                  <Info className="h-4 w-4 text-gray-400" />
+                </div>
+                <Select value={formData.annualRevenue} onValueChange={(value) => handleInputChange('annualRevenue', value)}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select a range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {revenueRanges.map((range) => (
+                      <SelectItem key={range} value={range}>
+                        {range}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Website */}
+              <div className="space-y-2">
+                <Label htmlFor="website" className="text-sm font-medium text-gray-700">
+                  Website
+                </Label>
+                <Input
+                  id="website"
+                  type="url"
+                  placeholder="e.g. freshly.com"
+                  value={formData.website}
+                  onChange={(e) => handleInputChange('website', e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  No website? Use a public social profile (LinkedIn, Instagram, or TikTok)
+                </p>
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep4}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+              >
+                Continue
+              </Button>
+            </>
+          ) : currentStep === 5 ? (
+            <>
+              {/* Business Goals Selection - Two Column Layout */}
+              <div className="grid grid-cols-2 gap-6">
+                {/* Discovery Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Discovery</h3>
+                  <div className="space-y-3">
+                    {businessGoals.discovery.map((goal) => {
+                      const isSelected = formData.businessGoals.includes(goal);
+                      return (
+                        <div
+                          key={goal}
+                          onClick={() => handleBusinessGoalToggle(goal)}
+                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-blue-800 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <span className={`text-sm font-medium ${
+                            isSelected ? 'text-blue-800' : 'text-gray-700'
+                          }`}>
+                            {goal}
+                          </span>
+                          <div className={`w-5 h-5 flex items-center justify-center ${
+                            isSelected ? '' : 'border-2 border-gray-300 rounded'
+                          }`}>
+                            {isSelected ? (
+                              <Check className="h-4 w-4 text-blue-800" />
+                            ) : (
+                              <span className="text-gray-400 text-lg">+</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Operations Section */}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Operations</h3>
+                  <div className="space-y-3">
+                    {businessGoals.operations.map((goal) => {
+                      const isSelected = formData.businessGoals.includes(goal);
+                      return (
+                        <div
+                          key={goal}
+                          onClick={() => handleBusinessGoalToggle(goal)}
+                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-blue-800 bg-blue-50'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <span className={`text-sm font-medium ${
+                            isSelected ? 'text-blue-800' : 'text-gray-700'
+                          }`}>
+                            {goal}
+                          </span>
+                          <div className={`w-5 h-5 flex items-center justify-center ${
+                            isSelected ? '' : 'border-2 border-gray-300 rounded'
+                          }`}>
+                            {isSelected ? (
+                              <Check className="h-4 w-4 text-blue-800" />
+                            ) : (
+                              <span className="text-gray-400 text-lg">+</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep5}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6 flex items-center justify-center space-x-2"
+              >
+                <span>Continue</span>
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </Button>
+            </>
+          ) : currentStep === 6 ? (
+            <>
+              {/* Yes/No Selection */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Yes Button */}
+                <Button
+                  onClick={() => handleProductLaunchSelection(true)}
+                  variant={formData.hasLaunchedProduct === true ? "default" : "outline"}
+                  className={`h-12 ${
+                    formData.hasLaunchedProduct === true
+                      ? 'bg-blue-800 hover:bg-blue-900 text-white'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <Check className="h-4 w-4 mr-2" />
+                  Yes
+                </Button>
+
+                {/* No Button */}
+                <Button
+                  onClick={() => handleProductLaunchSelection(false)}
+                  variant={formData.hasLaunchedProduct === false ? "default" : "outline"}
+                  className={`h-12 ${
+                    formData.hasLaunchedProduct === false
+                      ? 'bg-blue-800 hover:bg-blue-900 text-white'
+                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                  }`}
+                >
+                  <span className="mr-2">✕</span>
+                  No
+                </Button>
+              </div>
+
+              {/* Continue Button */}
+              {formData.hasLaunchedProduct !== null && (
+                <Button
+                  onClick={handleContinue}
+                  disabled={!canContinueStep6}
+                  className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+                >
+                  Continue
+                </Button>
+              )}
+            </>
+          ) : currentStep === 7 ? (
+            <>
+              {/* Product Categories Selection */}
+              <div className="space-y-3">
+                {productCategories.map((category) => {
+                  const isSelected = formData.interestedCategories.includes(category);
+                  return (
+                    <div
+                      key={category}
+                      onClick={() => handleCategoryToggle(category)}
+                      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all ${
+                        isSelected
+                          ? 'border-blue-800 bg-blue-50'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <span className={`text-sm font-medium ${
+                        isSelected ? 'text-blue-800' : 'text-gray-700'
+                      }`}>
+                        {category}
+                      </span>
+                      <div className={`w-6 h-6 flex items-center justify-center ${
+                        isSelected ? '' : 'border-2 border-gray-300 rounded'
+                      }`}>
+                        {isSelected ? (
+                          <Check className="h-4 w-4 text-blue-800" />
+                        ) : (
+                          <span className="text-gray-400 text-lg">+</span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep7}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+              >
+                Continue
+              </Button>
+            </>
+          ) : currentStep === 8 ? (
+            <>
+              {/* Product Description Textarea */}
+              <div className="space-y-4">
+                <textarea
+                  value={formData.productDescription}
+                  onChange={(e) => setFormData(prev => ({ ...prev, productDescription: e.target.value }))}
+                  placeholder="e.g. Collagen gummies for hair growth, Vitamin D3 immune drops, Private-label face serum for sensitive skin"
+                  className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent text-sm"
+                />
+              </div>
+
+              {/* Toggle Options */}
+              <div className="space-y-4 mt-6">
+                {/* Auto Create Request */}
+                <div className="flex items-start space-x-3">
+                  <div
+                    onClick={() => handleToggleOption('autoCreateRequest')}
+                    className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${
+                      formData.autoCreateRequest ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+                      formData.autoCreateRequest ? 'translate-x-6' : 'translate-x-0.5'
+                    } mt-0.5`} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 text-sm">Automatically create a sourcing request</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      We'll start a sourcing request for you based on your inputs — you can review and add more details before submitting.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Direct Introductions */}
+                <div className="flex items-start space-x-3">
+                  <div
+                    onClick={() => handleToggleOption('getDirectIntroductions')}
+                    className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${
+                      formData.getDirectIntroductions ? 'bg-green-500' : 'bg-gray-300'
+                    }`}
+                  >
+                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+                      formData.getDirectIntroductions ? 'translate-x-6' : 'translate-x-0.5'
+                    } mt-0.5`} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-gray-900 text-sm">Get direct introductions to preferred suppliers</h3>
+                    <p className="text-xs text-gray-600 mt-1">
+                      We'll connect you with trusted suppliers handpicked for your needs
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Continue Button */}
+              <Button
+                onClick={handleContinue}
+                disabled={!canContinueStep8}
+                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
+              >
+                Continue
+              </Button>
+            </>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Step {currentStep} content coming soon...</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

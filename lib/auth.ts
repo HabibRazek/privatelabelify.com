@@ -1,13 +1,7 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
-import { db } from './db';
-import { users } from './db/schema';
-import { eq } from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: DrizzleAdapter(db),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -16,35 +10,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
-          return null;
-        }
-
-        const user = await db
-          .select()
-          .from(users)
-          .where(eq(users.email, credentials.email as string))
-          .limit(1);
-
-        if (!user.length) {
-          return null;
-        }
-
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password as string,
-          user[0].password
-        );
-
-        if (!isPasswordValid) {
-          return null;
-        }
-
-        return {
-          id: user[0].id,
-          email: user[0].email,
-          firstName: user[0].firstName || undefined,
-          lastName: user[0].lastName || undefined,
-        };
+        // Simplified auth for now - just return null to prevent login
+        // This will be properly implemented when the database is set up
+        return null;
       },
     }),
   ],
