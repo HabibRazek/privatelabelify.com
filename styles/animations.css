@@ -1,0 +1,39 @@
+/* Infinite scroll animations for hero section */
+@layer utilities {
+  @keyframes scroll-up {
+    0% {
+      transform: translateY(0);
+    }
+    100% {
+      transform: translateY(-50%);
+    }
+  }
+
+  @keyframes scroll-down {
+    0% {
+      transform: translateY(-50%);
+    }
+    100% {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-scroll-up {
+    animation: scroll-up 40s linear infinite;
+  }
+
+  .animate-scroll-down {
+    animation: scroll-down 40s linear infinite;
+  }
+
+  /* Pause animation on hover for better UX */
+  .animate-scroll-up:hover,
+  .animate-scroll-down:hover {
+    animation-play-state: paused;
+  }
+
+  /* Additional smooth transitions */
+  .group:hover .group-hover\:scale-110 {
+    transform: scale(1.1);
+  }
+}
