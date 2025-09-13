@@ -31,10 +31,12 @@
     "next": "15.5.3",
     "next-auth": "^4.24.11",
     "react": "19.1.0",
+    "react-country-flag": "^3.1.0",
     "react-dom": "19.1.0",
     "react-phone-number-input": "^3.4.12",
     "tailwind-merge": "^3.3.1",
-    "use-places-autocomplete": "^4.0.1"
+    "use-places-autocomplete": "^4.0.1",
+    "world-countries": "^5.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

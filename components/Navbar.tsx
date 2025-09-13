@@ -74,32 +74,92 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation Menu */}
+        {/* Mobile Navigation Sheet */}
         {isMenuOpen && (
-          <div className="md:hidden bg-white border-t border-gray-200">
-            <div className="px-4 py-4 space-y-4">
-              <button className="w-full text-left text-sm text-gray-700 hover:text-blue-800 py-2">
-                Resources
-              </button>
-              <button className="w-full text-left text-sm text-gray-700 hover:text-blue-800 py-2">
-                Create request
-              </button>
-              <button className="w-full text-left text-sm text-gray-700 hover:text-blue-800 py-2">
-                Platform
-              </button>
-              <div className="pt-4 border-t border-gray-200 space-y-3">
-                <button className="w-full text-center text-sm text-gray-700 hover:text-blue-800 py-2 font-medium">
-                  Login
-                </button>
-                <Button
-                  onClick={() => router.push('/auth/signup')}
-                  className="w-full bg-blue-800 hover:bg-blue-900 text-white py-2 text-sm rounded-lg font-medium"
+          <>
+            {/* Backdrop */}
+            <div
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden transition-opacity duration-300 ease-out"
+              onClick={() => setIsMenuOpen(false)}
+            />
+
+            {/* Mobile Sheet */}
+            <div className={`fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-50 md:hidden transform transition-transform duration-300 ease-out ${
+              isMenuOpen ? 'translate-x-0' : 'translate-x-full'
+            }`}>
+              {/* Sheet Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-100">
+                <div className="flex items-center">
+                  <Image
+                    src="/logo/Make your private label.png"
+                    alt="PrivateLabelify Logo"
+                    width={120}
+                    height={35}
+                    className="h-7 w-auto"
+                  />
+                </div>
+                <button
+                  onClick={() => setIsMenuOpen(false)}
+                  className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                 >
-                  Get Started
-                </Button>
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="flex flex-col h-full">
+                <nav className="flex-1 px-6 py-6 space-y-1">
+                  <div className="space-y-1">
+                    <button className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 group">
+                      <span className="font-medium">Resources</span>
+                      <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-blue-800 transition-colors" />
+                    </button>
+
+                    <button className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                      <span className="font-medium">Create Request</span>
+                    </button>
+
+                    <button className="w-full flex items-center justify-between px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200 group">
+                      <span className="font-medium">Platform</span>
+                      <ChevronDown className="w-4 h-4 text-gray-400 group-hover:text-blue-800 transition-colors" />
+                    </button>
+                  </div>
+
+                  {/* Divider */}
+                  <div className="my-6 border-t border-gray-200"></div>
+
+                  {/* Additional Links */}
+                  <div className="space-y-1">
+                    <button className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                      <span className="font-medium">About Us</span>
+                    </button>
+                    <button className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                      <span className="font-medium">Contact</span>
+                    </button>
+                    <button className="w-full flex items-center px-4 py-3 text-left text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200">
+                      <span className="font-medium">Help Center</span>
+                    </button>
+                  </div>
+                </nav>
+
+                {/* Bottom Actions */}
+                <div className="p-6 border-t border-gray-100 space-y-3">
+                  <button className="w-full text-center py-3 px-4 text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg font-medium transition-all duration-200">
+                    Login
+                  </button>
+                  <Button
+                    onClick={() => {
+                      router.push('/auth/signup');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full bg-blue-800 hover:bg-blue-900 text-white py-3 px-4 rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl"
+                  >
+                    Get Started
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     </header>

@@ -3,7 +3,7 @@ import HeroSection from "@/components/HeroSection";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import ProductCategories from "@/components/ProductCategories";
 import Footer from "@/components/Footer";
-import HowItWorksDemo from "./how-it-works-demo/page";
+import HowItWorks from "@/components/HowItWorks";
 
 export default function Home() {
   return (
@@ -11,7 +11,7 @@ export default function Home() {
       <Navbar />
       <HeroSection />
       <WhyChooseUs />
-      <HowItWorksDemo />
+      <HowItWorks />
       <ProductCategories />
       <Footer />
     </div>
