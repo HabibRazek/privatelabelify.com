@@ -1,21 +1,39 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Stepper } from "@/components/ui/stepper";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
-import { Eye, EyeOff, Check, RotateCcw, ArrowLeft, Info } from "lucide-react";
-import PhoneInput from 'react-phone-number-input';
-import 'react-phone-number-input/style.css';
+import { Eye, EyeOff, Check, RotateCcw, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import Image from 'next/image';
+import worldCountries from 'world-countries';
+import ReactCountryFlag from 'react-country-flag';
+
+interface Country {
+  code: string;
+  name: string;
+  dialCode: string;
+}
+
+// Process world countries data to get all countries with dial codes
+const countries: Country[] = worldCountries
+  .filter(country => country.idd?.root) // Only countries with dial codes
+  .map(country => ({
+    code: country.cca2,
+    name: country.name.common,
+    dialCode: country.idd.root + (country.idd.suffixes?.[0] || '')
+  }))
+  .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
 
 export default function RetailerSignupPage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<Country>(
+    countries.find(c => c.code === 'US') || countries[0]
+  ); // Default to US
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -102,7 +120,6 @@ export default function RetailerSignupPage() {
   const canContinueStep7 = formData.interestedCategories.length > 0;
   const canContinueStep8 = formData.productDescription.trim().length > 0;
 
-  // Company type options
   const companyTypes = [
     'Agency',
     'Consultant',
@@ -156,571 +173,559 @@ export default function RetailerSignupPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-white shadow-lg">
-        {/* Progress Stepper */}
-        <Stepper currentStep={currentStep} totalSteps={8} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white flex items-center justify-center p-4">
+      <div className="w-full max-w-2xl">
+        {/* Progress Bar integrated at top of card */}
+        <div className="bg-white rounded-t-lg">
+          <div className="h-2 bg-gray-200 rounded-t-lg overflow-hidden">
+            <div
+              className="h-full bg-blue-800 transition-all duration-300"
+              style={{ width: `${(currentStep / 8) * 100}%` }}
+            />
+          </div>
+        </div>
 
-        <CardHeader className={`pb-4 ${(currentStep >= 4) ? 'text-left' : 'text-center'}`}>
-          {(currentStep >= 4) && (
-            <button
-              onClick={handleBack}
-              className="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-800 mb-4"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Back</span>
-            </button>
-          )}
-          <CardTitle className="text-xl font-semibold text-gray-900">
-            {currentStep === 1 ? 'Create your account' :
-             currentStep === 2 ? 'Check your email' :
-             currentStep === 3 ? 'Tell us about yourself' :
-             currentStep === 4 ? 'Tell us about your company' :
-             currentStep === 5 ? 'What are you looking to do with PrivateLabelify?' :
-             currentStep === 6 ? 'Have you launched a product before?' :
-             currentStep === 7 ? 'What are you interested in?' :
-             'What product or packaging are you sourcing?'}
-          </CardTitle>
-          {currentStep === 5 && (
-            <p className="text-sm text-gray-600 mt-1">
-              Select all that apply - we'll personalize your experience accordingly
-            </p>
-          )}
-          {currentStep === 7 && (
-            <p className="text-sm text-gray-600 mt-1">
-              Choose the categories that are relevant to you
-            </p>
-          )}
-          {currentStep === 8 && (
-            <p className="text-sm text-gray-600 mt-1">
-              Be specific so we can match you with the right suppliers
-            </p>
-          )}
-          {currentStep <= 3 && (
-            <p className="text-sm text-gray-600 mt-1">
+        {/* Main Card Content */}
+        <div className="bg-white rounded-b-lg shadow-lg p-6 md:p-8">
+          {/* Header */}
+          <div className="text-center mb-6 md:mb-8">
+            <div className="flex items-center justify-center mb-4">
+              <Image
+                src="/logo/Make your private label.png"
+                alt="PrivateLabelify Logo"
+                width={180}
+                height={50}
+                className="h-8 md:h-10 w-auto"
+              />
+            </div>
+            <h1 className="text-lg md:text-xl font-bold text-gray-900 mb-2">
+              {currentStep === 1 ? 'Create your account' :
+                currentStep === 2 ? 'Check your email' :
+                  currentStep === 3 ? 'Tell us about yourself' :
+                    currentStep === 4 ? 'Tell us about your company' :
+                      currentStep === 5 ? 'What are you looking to do with PrivateLabelify?' :
+                        currentStep === 6 ? 'Have you launched a product before?' :
+                          currentStep === 7 ? 'What are you interested in?' :
+                            'What product or packaging are you sourcing?'}
+            </h1>
+            <p className="text-xs md:text-sm text-gray-600">
               {currentStep === 1
                 ? 'Use your work email and create a password to get started'
                 : currentStep === 2 ? (
                   <>
-                    We've sent a 4-digit code to{' '}
+                    We&aposve sent a 4-digit code to{' '}
                     <span className="font-medium text-blue-800">{formData.email}</span>
                   </>
-                ) : 'This is how you\'ll appear on PrivateLabelify'
+                ) : currentStep === 3 ? 'This is how you&apos;ll appear on PrivateLabelify'
+                  : currentStep === 5 ? 'Select all that apply - we&apos;ll personalize your experience accordingly'
+                    : currentStep === 7 ? 'Choose the categories that are relevant to you'
+                      : currentStep === 8 ? 'Be specific so we can match you with the right suppliers'
+                        : ''
               }
             </p>
-          )}
-        </CardHeader>
+          </div>
 
-        <CardContent className="space-y-4">
-          {currentStep === 1 ? (
-            <>
-              {/* Work Email */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  Work email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@company.com"
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  Password
-                </Label>
-                <div className="relative">
+          {/* Step Content */}
+          <div className="mb-6 md:mb-8 space-y-4">
+            {currentStep === 1 ? (
+              <>
+                {/* Work Email */}
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-xs md:text-sm font-medium text-gray-700">
+                    Work email
+                  </Label>
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Set password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    className="w-full pr-10"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Password Requirements */}
-              <div className="space-y-2">
-                {passwordRules.map((rule, index) => (
-                  <div key={index} className="flex items-center space-x-2 text-xs">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center ${
-                      rule.check ? 'bg-green-500' : 'bg-gray-200'
-                    }`}>
-                      {rule.check && <Check className="h-2.5 w-2.5 text-white" />}
-                    </div>
-                    <span className={rule.check ? 'text-green-600' : 'text-gray-500'}>
-                      {rule.rule}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep1}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-              >
-                Continue
-              </Button>
-            </>
-          ) : currentStep === 2 ? (
-            <>
-              {/* OTP Input */}
-              <div className="flex justify-center mb-6">
-                <InputOTP
-                  maxLength={4}
-                  value={formData.otp}
-                  onChange={(value) => handleInputChange('otp', value)}
-                >
-                  <InputOTPGroup>
-                    <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
-                    <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
-                    <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
-                    <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
-                  </InputOTPGroup>
-                </InputOTP>
-              </div>
-
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep2}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mb-4"
-              >
-                Continue
-              </Button>
-
-              {/* Resend Code */}
-              <div className="text-center space-y-2">
-                <button
-                  onClick={handleResendCode}
-                  className="flex items-center justify-center space-x-2 text-sm text-blue-800 hover:text-blue-900 mx-auto"
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  <span>Resend code</span>
-                </button>
-
-                <button className="text-sm text-blue-600 hover:text-blue-700">
-                  Change email address
-                </button>
-              </div>
-            </>
-          ) : currentStep === 3 ? (
-            <>
-              {/* First Name */}
-              <div className="space-y-2">
-                <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
-                  First name
-                </Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  placeholder="Alex"
-                  value={formData.firstName}
-                  onChange={(e) => handleInputChange('firstName', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Last Name */}
-              <div className="space-y-2">
-                <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
-                  Last name
-                </Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  placeholder="Taylor"
-                  value={formData.lastName}
-                  onChange={(e) => handleInputChange('lastName', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                  Phone
-                </Label>
-                <div className="phone-input-container">
-                  <PhoneInput
-                    placeholder="1512 3456789"
-                    value={formData.phone}
-                    onChange={(value) => handleInputChange('phone', value || '')}
-                    defaultCountry="US"
+                    id="email"
+                    type="email"
+                    placeholder="name@company.com"
+                    value={formData.email}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
                     className="w-full"
                   />
                 </div>
-              </div>
 
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep3}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-              >
-                Continue
-              </Button>
-            </>
-          ) : currentStep === 4 ? (
-            <>
-              {/* Company Name */}
-              <div className="space-y-2">
-                <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">
-                  Company name
-                </Label>
-                <Input
-                  id="companyName"
-                  type="text"
-                  placeholder="e.g. Freshly Foods"
-                  value={formData.companyName}
-                  onChange={(e) => handleInputChange('companyName', e.target.value)}
-                  className="w-full"
-                />
-              </div>
-
-              {/* Address */}
-              <div className="space-y-2">
-                <Label htmlFor="address" className="text-sm font-medium text-gray-700">
-                  Address
-                </Label>
-                <AddressAutocomplete
-                  value={formData.address}
-                  onChange={(value) => handleInputChange('address', value)}
-                  placeholder="Search address..."
-                  className="w-full"
-                />
-              </div>
-
-              {/* Company Type */}
-              <div className="space-y-2">
-                <Label htmlFor="companyType" className="text-sm font-medium text-gray-700">
-                  Company type
-                </Label>
-                <Select value={formData.companyType} onValueChange={(value) => handleInputChange('companyType', value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a company type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companyTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Annual Revenue */}
-              <div className="space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Label htmlFor="annualRevenue" className="text-sm font-medium text-gray-700">
-                    Annual revenue
+                {/* Password */}
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-xs md:text-sm font-medium text-gray-700">
+                    Password
                   </Label>
-                  <Info className="h-4 w-4 text-gray-400" />
-                </div>
-                <Select value={formData.annualRevenue} onValueChange={(value) => handleInputChange('annualRevenue', value)}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {revenueRanges.map((range) => (
-                      <SelectItem key={range} value={range}>
-                        {range}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Website */}
-              <div className="space-y-2">
-                <Label htmlFor="website" className="text-sm font-medium text-gray-700">
-                  Website
-                </Label>
-                <Input
-                  id="website"
-                  type="url"
-                  placeholder="e.g. freshly.com"
-                  value={formData.website}
-                  onChange={(e) => handleInputChange('website', e.target.value)}
-                  className="w-full"
-                />
-                <p className="text-xs text-gray-500">
-                  No website? Use a public social profile (LinkedIn, Instagram, or TikTok)
-                </p>
-              </div>
-
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep4}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-              >
-                Continue
-              </Button>
-            </>
-          ) : currentStep === 5 ? (
-            <>
-              {/* Business Goals Selection - Two Column Layout */}
-              <div className="grid grid-cols-2 gap-6">
-                {/* Discovery Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Discovery</h3>
-                  <div className="space-y-3">
-                    {businessGoals.discovery.map((goal) => {
-                      const isSelected = formData.businessGoals.includes(goal);
-                      return (
-                        <div
-                          key={goal}
-                          onClick={() => handleBusinessGoalToggle(goal)}
-                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
-                            isSelected
-                              ? 'border-blue-800 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <span className={`text-sm font-medium ${
-                            isSelected ? 'text-blue-800' : 'text-gray-700'
-                          }`}>
-                            {goal}
-                          </span>
-                          <div className={`w-5 h-5 flex items-center justify-center ${
-                            isSelected ? '' : 'border-2 border-gray-300 rounded'
-                          }`}>
-                            {isSelected ? (
-                              <Check className="h-4 w-4 text-blue-800" />
-                            ) : (
-                              <span className="text-gray-400 text-lg">+</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Operations Section */}
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Operations</h3>
-                  <div className="space-y-3">
-                    {businessGoals.operations.map((goal) => {
-                      const isSelected = formData.businessGoals.includes(goal);
-                      return (
-                        <div
-                          key={goal}
-                          onClick={() => handleBusinessGoalToggle(goal)}
-                          className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${
-                            isSelected
-                              ? 'border-blue-800 bg-blue-50'
-                              : 'border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <span className={`text-sm font-medium ${
-                            isSelected ? 'text-blue-800' : 'text-gray-700'
-                          }`}>
-                            {goal}
-                          </span>
-                          <div className={`w-5 h-5 flex items-center justify-center ${
-                            isSelected ? '' : 'border-2 border-gray-300 rounded'
-                          }`}>
-                            {isSelected ? (
-                              <Check className="h-4 w-4 text-blue-800" />
-                            ) : (
-                              <span className="text-gray-400 text-lg">+</span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep5}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6 flex items-center justify-center space-x-2"
-              >
-                <span>Continue</span>
-                <ArrowLeft className="h-4 w-4 rotate-180" />
-              </Button>
-            </>
-          ) : currentStep === 6 ? (
-            <>
-              {/* Yes/No Selection */}
-              <div className="grid grid-cols-2 gap-4">
-                {/* Yes Button */}
-                <Button
-                  onClick={() => handleProductLaunchSelection(true)}
-                  variant={formData.hasLaunchedProduct === true ? "default" : "outline"}
-                  className={`h-12 ${
-                    formData.hasLaunchedProduct === true
-                      ? 'bg-blue-800 hover:bg-blue-900 text-white'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
-                >
-                  <Check className="h-4 w-4 mr-2" />
-                  Yes
-                </Button>
-
-                {/* No Button */}
-                <Button
-                  onClick={() => handleProductLaunchSelection(false)}
-                  variant={formData.hasLaunchedProduct === false ? "default" : "outline"}
-                  className={`h-12 ${
-                    formData.hasLaunchedProduct === false
-                      ? 'bg-blue-800 hover:bg-blue-900 text-white'
-                      : 'border-gray-200 hover:border-gray-300 text-gray-700'
-                  }`}
-                >
-                  <span className="mr-2">✕</span>
-                  No
-                </Button>
-              </div>
-
-              {/* Continue Button */}
-              {formData.hasLaunchedProduct !== null && (
-                <Button
-                  onClick={handleContinue}
-                  disabled={!canContinueStep6}
-                  className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-                >
-                  Continue
-                </Button>
-              )}
-            </>
-          ) : currentStep === 7 ? (
-            <>
-              {/* Product Categories Selection */}
-              <div className="space-y-3">
-                {productCategories.map((category) => {
-                  const isSelected = formData.interestedCategories.includes(category);
-                  return (
-                    <div
-                      key={category}
-                      onClick={() => handleCategoryToggle(category)}
-                      className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-blue-800 bg-blue-50'
-                          : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Set password"
+                      value={formData.password}
+                      onChange={(e) => handleInputChange('password', e.target.value)}
+                      className="w-full pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      <span className={`text-sm font-medium ${
-                        isSelected ? 'text-blue-800' : 'text-gray-700'
-                      }`}>
-                        {category}
-                      </span>
-                      <div className={`w-6 h-6 flex items-center justify-center ${
-                        isSelected ? '' : 'border-2 border-gray-300 rounded'
-                      }`}>
-                        {isSelected ? (
-                          <Check className="h-4 w-4 text-blue-800" />
-                        ) : (
-                          <span className="text-gray-400 text-lg">+</span>
-                        )}
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Password Requirements */}
+                <div className="space-y-1.5">
+                  {passwordRules.map((rule, index) => (
+                    <div key={index} className="flex items-center space-x-2 text-xs">
+                      <div className={`w-3 h-3 md:w-4 md:h-4 rounded-full flex items-center justify-center ${rule.check ? 'bg-green-500' : 'bg-gray-200'
+                        }`}>
+                        {rule.check && <Check className="h-2 w-2 md:h-2.5 md:w-2.5 text-white" />}
                       </div>
+                      <span className={`text-xs ${rule.check ? 'text-green-600' : 'text-gray-500'}`}>
+                        {rule.rule}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
 
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep7}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-              >
-                Continue
-              </Button>
-            </>
-          ) : currentStep === 8 ? (
-            <>
-              {/* Product Description Textarea */}
-              <div className="space-y-4">
-                <textarea
-                  value={formData.productDescription}
-                  onChange={(e) => setFormData(prev => ({ ...prev, productDescription: e.target.value }))}
-                  placeholder="e.g. Collagen gummies for hair growth, Vitamin D3 immune drops, Private-label face serum for sensitive skin"
-                  className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent text-sm"
-                />
-              </div>
 
-              {/* Toggle Options */}
-              <div className="space-y-4 mt-6">
-                {/* Auto Create Request */}
-                <div className="flex items-start space-x-3">
-                  <div
-                    onClick={() => handleToggleOption('autoCreateRequest')}
-                    className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${
-                      formData.autoCreateRequest ? 'bg-green-500' : 'bg-gray-300'
-                    }`}
+              </>
+            ) : currentStep === 2 ? (
+              <>
+                {/* OTP Input */}
+                <div className="flex justify-center mb-6">
+                  <InputOTP
+                    maxLength={4}
+                    value={formData.otp}
+                    onChange={(value) => handleInputChange('otp', value)}
                   >
-                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                      formData.autoCreateRequest ? 'translate-x-6' : 'translate-x-0.5'
-                    } mt-0.5`} />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-gray-900 text-sm">Automatically create a sourcing request</h3>
-                    <p className="text-xs text-gray-600 mt-1">
-                      We'll start a sourcing request for you based on your inputs — you can review and add more details before submitting.
-                    </p>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={1} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={2} className="w-12 h-12 text-lg" />
+                      <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+
+
+
+                {/* Resend Code */}
+                <div className="text-center space-y-2">
+                  <button
+                    onClick={handleResendCode}
+                    className="flex items-center justify-center space-x-2 text-sm text-blue-800 hover:text-blue-900 mx-auto"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    <span>Resend code</span>
+                  </button>
+
+                  <button className="text-sm text-blue-600 hover:text-blue-700">
+                    Change email address
+                  </button>
+                </div>
+              </>
+            ) : currentStep === 3 ? (
+              <>
+                {/* First Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-xs md:text-sm font-medium text-gray-700">
+                    First name
+                  </Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    placeholder="Alex"
+                    value={formData.firstName}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Last Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-xs md:text-sm font-medium text-gray-700">
+                    Last name
+                  </Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    placeholder="Taylor"
+                    value={formData.lastName}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Phone */}
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-xs md:text-sm font-medium text-gray-700">
+                    Phone
+                  </Label>
+                  <div className="flex">
+                    <Select value={selectedCountry.code} onValueChange={(value) => {
+                      const country = countries.find(c => c.code === value);
+                      if (country) setSelectedCountry(country);
+                    }}>
+                      <SelectTrigger className="w-[120px] rounded-r-none border-r-0">
+                        <SelectValue>
+                          <div className="flex items-center gap-2">
+                            <ReactCountryFlag
+                              countryCode={selectedCountry.code}
+                              svg
+                              style={{ width: '20px', height: '15px' }}
+                            />
+                            <span className="text-sm">{selectedCountry.dialCode}</span>
+                          </div>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60">
+                        {countries.map((country) => (
+                          <SelectItem key={country.code} value={country.code}>
+                            <div className="flex items-center gap-2">
+                              <ReactCountryFlag
+                                countryCode={country.code}
+                                svg
+                                style={{ width: '20px', height: '15px' }}
+                              />
+                              <span className="text-sm">{country.dialCode}</span>
+                              <span className="text-sm text-gray-600">{country.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="1512 3456789"
+                      value={formData.phone}
+                      onChange={(e) => handleInputChange('phone', e.target.value)}
+                      className="flex-1 rounded-l-none"
+                    />
                   </div>
                 </div>
 
-                {/* Direct Introductions */}
-                <div className="flex items-start space-x-3">
-                  <div
-                    onClick={() => handleToggleOption('getDirectIntroductions')}
-                    className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${
-                      formData.getDirectIntroductions ? 'bg-green-500' : 'bg-gray-300'
-                    }`}
-                  >
-                    <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
-                      formData.getDirectIntroductions ? 'translate-x-6' : 'translate-x-0.5'
-                    } mt-0.5`} />
+
+              </>
+            ) : currentStep === 4 ? (
+              <>
+                {/* Company Name */}
+                <div className="space-y-2">
+                  <Label htmlFor="companyName" className="text-sm font-medium text-gray-700">
+                    Company name
+                  </Label>
+                  <Input
+                    id="companyName"
+                    type="text"
+                    placeholder="e.g. Freshly Foods"
+                    value={formData.companyName}
+                    onChange={(e) => handleInputChange('companyName', e.target.value)}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Address */}
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-medium text-gray-700">
+                    Address
+                  </Label>
+                  <AddressAutocomplete
+                    value={formData.address}
+                    onChange={(value) => handleInputChange('address', value)}
+                    placeholder="Search address..."
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Company Type */}
+                <div className="space-y-2">
+                  <Label htmlFor="companyType" className="text-sm font-medium text-gray-700">
+                    Company type
+                  </Label>
+                  <Select value={formData.companyType} onValueChange={(value) => handleInputChange('companyType', value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a company type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {companyTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Annual Revenue */}
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="annualRevenue" className="text-sm font-medium text-gray-700">
+                      Annual revenue
+                    </Label>
+                    <Info className="h-4 w-4 text-gray-400" />
                   </div>
+                  <Select value={formData.annualRevenue} onValueChange={(value) => handleInputChange('annualRevenue', value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select a range" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {revenueRanges.map((range) => (
+                        <SelectItem key={range} value={range}>
+                          {range}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Website */}
+                <div className="space-y-2">
+                  <Label htmlFor="website" className="text-sm font-medium text-gray-700">
+                    Website
+                  </Label>
+                  <Input
+                    id="website"
+                    type="url"
+                    placeholder="e.g. freshly.com"
+                    value={formData.website}
+                    onChange={(e) => handleInputChange('website', e.target.value)}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-gray-500">
+                    No website? Use a public social profile (LinkedIn, Instagram, or TikTok)
+                  </p>
+                </div>
+
+
+              </>
+            ) : currentStep === 5 ? (
+              <>
+                {/* Business Goals Selection - Two Column Layout */}
+                <div className="grid grid-cols-2 gap-6">
+                  {/* Discovery Section */}
                   <div>
-                    <h3 className="font-medium text-gray-900 text-sm">Get direct introductions to preferred suppliers</h3>
-                    <p className="text-xs text-gray-600 mt-1">
-                      We'll connect you with trusted suppliers handpicked for your needs
-                    </p>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Discovery</h3>
+                    <div className="space-y-3">
+                      {businessGoals.discovery.map((goal) => {
+                        const isSelected = formData.businessGoals.includes(goal);
+                        return (
+                          <div
+                            key={goal}
+                            onClick={() => handleBusinessGoalToggle(goal)}
+                            className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${isSelected
+                                ? 'border-blue-800 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                          >
+                            <span className={`text-sm font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'
+                              }`}>
+                              {goal}
+                            </span>
+                            <div className={`w-5 h-5 flex items-center justify-center ${isSelected ? '' : 'border-2 border-gray-300 rounded'
+                              }`}>
+                              {isSelected ? (
+                                <Check className="h-4 w-4 text-blue-800" />
+                              ) : (
+                                <span className="text-gray-400 text-lg">+</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Operations Section */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Operations</h3>
+                    <div className="space-y-3">
+                      {businessGoals.operations.map((goal) => {
+                        const isSelected = formData.businessGoals.includes(goal);
+                        return (
+                          <div
+                            key={goal}
+                            onClick={() => handleBusinessGoalToggle(goal)}
+                            className={`flex items-center justify-between p-3 border rounded-lg cursor-pointer transition-all ${isSelected
+                                ? 'border-blue-800 bg-blue-50'
+                                : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                          >
+                            <span className={`text-sm font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'
+                              }`}>
+                              {goal}
+                            </span>
+                            <div className={`w-5 h-5 flex items-center justify-center ${isSelected ? '' : 'border-2 border-gray-300 rounded'
+                              }`}>
+                              {isSelected ? (
+                                <Check className="h-4 w-4 text-blue-800" />
+                              ) : (
+                                <span className="text-gray-400 text-lg">+</span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Continue Button */}
-              <Button
-                onClick={handleContinue}
-                disabled={!canContinueStep8}
-                className="w-full bg-blue-800 hover:bg-blue-900 text-white mt-6"
-              >
-                Continue
-              </Button>
-            </>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600">Step {currentStep} content coming soon...</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+
+              </>
+            ) : currentStep === 6 ? (
+              <>
+                {/* Yes/No Selection */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Yes Button */}
+                  <Button
+                    onClick={() => handleProductLaunchSelection(true)}
+                    variant={formData.hasLaunchedProduct === true ? "default" : "outline"}
+                    className={`h-12 ${formData.hasLaunchedProduct === true
+                        ? 'bg-blue-800 hover:bg-blue-900 text-white'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                  >
+                    <Check className="h-4 w-4 mr-2" />
+                    Yes
+                  </Button>
+
+                  {/* No Button */}
+                  <Button
+                    onClick={() => handleProductLaunchSelection(false)}
+                    variant={formData.hasLaunchedProduct === false ? "default" : "outline"}
+                    className={`h-12 ${formData.hasLaunchedProduct === false
+                        ? 'bg-blue-800 hover:bg-blue-900 text-white'
+                        : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                      }`}
+                  >
+                    <span className="mr-2">✕</span>
+                    No
+                  </Button>
+                </div>
+
+
+              </>
+            ) : currentStep === 7 ? (
+              <>
+                {/* Product Categories Selection */}
+                <div className="space-y-3">
+                  {productCategories.map((category) => {
+                    const isSelected = formData.interestedCategories.includes(category);
+                    return (
+                      <div
+                        key={category}
+                        onClick={() => handleCategoryToggle(category)}
+                        className={`flex items-center justify-between p-4 border rounded-lg cursor-pointer transition-all ${isSelected
+                            ? 'border-blue-800 bg-blue-50'
+                            : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                      >
+                        <span className={`text-sm font-medium ${isSelected ? 'text-blue-800' : 'text-gray-700'
+                          }`}>
+                          {category}
+                        </span>
+                        <div className={`w-6 h-6 flex items-center justify-center ${isSelected ? '' : 'border-2 border-gray-300 rounded'
+                          }`}>
+                          {isSelected ? (
+                            <Check className="h-4 w-4 text-blue-800" />
+                          ) : (
+                            <span className="text-gray-400 text-lg">+</span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+
+              </>
+            ) : currentStep === 8 ? (
+              <>
+                {/* Product Description Textarea */}
+                <div className="space-y-4">
+                  <textarea
+                    value={formData.productDescription}
+                    onChange={(e) => setFormData(prev => ({ ...prev, productDescription: e.target.value }))}
+                    placeholder="e.g. Collagen gummies for hair growth, Vitamin D3 immune drops, Private-label face serum for sensitive skin"
+                    className="w-full h-32 p-4 border border-gray-200 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-800 focus:border-transparent text-sm"
+                  />
+                </div>
+
+                {/* Toggle Options */}
+                <div className="space-y-4 mt-6">
+                  {/* Auto Create Request */}
+                  <div className="flex items-start space-x-3">
+                    <div
+                      onClick={() => handleToggleOption('autoCreateRequest')}
+                      className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${formData.autoCreateRequest ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                    >
+                      <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${formData.autoCreateRequest ? 'translate-x-6' : 'translate-x-0.5'
+                        } mt-0.5`} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-sm">Automatically create a sourcing request</h3>
+                      <p className="text-xs text-gray-600 mt-1">
+                        We&apos;ll start a sourcing request for you based on your inputs — you can review and add more details before submitting.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Direct Introductions */}
+                  <div className="flex items-start space-x-3">
+                    <div
+                      onClick={() => handleToggleOption('getDirectIntroductions')}
+                      className={`flex-shrink-0 w-12 h-6 rounded-full cursor-pointer transition-all ${formData.getDirectIntroductions ? 'bg-green-500' : 'bg-gray-300'
+                        }`}
+                    >
+                      <div className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${formData.getDirectIntroductions ? 'translate-x-6' : 'translate-x-0.5'
+                        } mt-0.5`} />
+                    </div>
+                    <div>
+                      <h3 className="font-medium text-gray-900 text-sm">Get direct introductions to preferred suppliers</h3>
+                      <p className="text-xs text-gray-600 mt-1">
+                        We&apos;ll connect you with trusted suppliers handpicked for your needs
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+
+              </>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Step {currentStep} content coming soon...</p>
+              </div>
+            )}
+          </div>
+
+          {/* Navigation Buttons */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              disabled={currentStep === 1}
+              className="flex items-center space-x-2"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              <span>Back</span>
+            </Button>
+
+            <Button
+              onClick={handleContinue}
+              disabled={
+                (currentStep === 1 && !canContinueStep1) ||
+                (currentStep === 2 && !canContinueStep2) ||
+                (currentStep === 3 && !canContinueStep3) ||
+                (currentStep === 4 && !canContinueStep4) ||
+                (currentStep === 5 && !canContinueStep5) ||
+                (currentStep === 6 && !canContinueStep6) ||
+                (currentStep === 7 && !canContinueStep7) ||
+                (currentStep === 8 && !canContinueStep8)
+              }
+              className="flex items-center space-x-2 bg-blue-800 hover:bg-blue-900 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>{currentStep === 8 ? 'Complete' : 'Continue'}</span>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
