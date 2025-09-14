@@ -25,12 +25,12 @@ const getAccountStats = (retailerData: any) => [
   },
   {
     title: 'Business Goals',
-    value: retailerData.businessGoals?.length || 0,
+    value: (retailerData.businessGoals || []).length,
     icon: Target,
   },
   {
     title: 'Categories',
-    value: retailerData.interestedCategories?.length || 0,
+    value: (retailerData.interestedCategories || []).length,
     icon: Package,
   },
   {
@@ -127,11 +127,17 @@ export default async function RetailerDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
-                {retailerData.businessGoals.map((goal: string, index: number) => (
-                  <div key={index} className="p-3 bg-gray-50/50 rounded-lg">
-                    <span className="text-sm font-medium text-gray-700">{goal}</span>
+                {(retailerData.businessGoals || []).length > 0 ? (
+                  (retailerData.businessGoals || []).map((goal: string, index: number) => (
+                    <div key={index} className="p-3 bg-gray-50/50 rounded-lg">
+                      <span className="text-sm font-medium text-gray-700">{goal}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="p-3 bg-gray-50/50 rounded-lg text-center">
+                    <span className="text-sm text-gray-500">No business goals set yet</span>
                   </div>
-                ))}
+                )}
               </CardContent>
             </Card>
 
@@ -150,15 +156,21 @@ export default async function RetailerDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {retailerData.interestedCategories.map((category: string, index: number) => (
-                    <Badge
-                      key={index}
-                      variant="outline"
-                      className="bg-green-50/50 text-green-700 border-green-200 hover:bg-green-100/50 transition-colors"
-                    >
-                      {category}
-                    </Badge>
-                  ))}
+                  {(retailerData.interestedCategories || []).length > 0 ? (
+                    (retailerData.interestedCategories || []).map((category: string, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="bg-green-50/50 text-green-700 border-green-200 hover:bg-green-100/50 transition-colors"
+                      >
+                        {category}
+                      </Badge>
+                    ))
+                  ) : (
+                    <div className="w-full p-3 bg-gray-50/50 rounded-lg text-center">
+                      <span className="text-sm text-gray-500">No categories selected yet</span>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
