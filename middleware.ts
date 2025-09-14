@@ -33,10 +33,8 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
   const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
 
-  // If user is logged in and trying to access auth pages, redirect to dashboard
-  if (isLoggedIn && isAuthRoute) {
-    return NextResponse.redirect(new URL('/dashboard/retailer', request.url));
-  }
+  // Skip auth route redirects - let NextAuth and client-side handle them
+  // This prevents conflicts with NextAuth's internal redirects
 
   // If user is not logged in and trying to access protected routes, redirect to signin
   if (!isLoggedIn && isProtectedRoute) {

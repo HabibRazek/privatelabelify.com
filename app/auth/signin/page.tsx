@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get('callbackUrl') || '/dashboard/retailer';
+  const callbackUrl = searchParams.get('callbackUrl');
   const { data: session, status } = useSession();
 
   const [formData, setFormData] = useState({
@@ -24,12 +24,27 @@ function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  // Helper function to get dashboard URL based on user role
+  const getDashboardUrl = (userRole: string) => {
+    switch (userRole) {
+      case 'retailer':
+        return '/dashboard/retailer';
+      case 'supplier':
+        return '/dashboard/supplier';
+      case 'manufacturer':
+        return '/dashboard/manufacturer';
+      default:
+        return '/dashboard/retailer';
+    }
+  };
+
   // Redirect if already logged in
   useEffect(() => {
-    if (status === 'authenticated' && session) {
-      router.push('/dashboard/retailer');
+    if (status === 'authenticated' && session?.user?.role) {
+      const dashboardUrl = getDashboardUrl(session.user.role);
+      router.push(callbackUrl || dashboardUrl);
     }
-  }, [status, session, router]);
+  }, [status, session, router, callbackUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +61,8 @@ function SignInForm() {
         toast.error('Invalid email or password');
       } else {
         toast.success('Signed in successfully');
-        router.push(callbackUrl);
+        // Let the useEffect handle the redirect based on user role
+        // The session will be updated and useEffect will trigger
       }
     } catch (error) {
       toast.error('An error occurred. Please try again.');
