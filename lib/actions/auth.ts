@@ -75,8 +75,8 @@ export async function sendEmailVerificationCode(email: string): Promise<ApiSucce
       success: true,
       message: 'Verification code sent successfully',
       // Include OTP for development/testing (remove in production)
-      otp: process.env.NODE_ENV === 'development' ? code : undefined,
-    };
+      ...(process.env.NODE_ENV === 'development' && { otp: code }),
+    } as ApiSuccess;
   } catch (error) {
     console.error('Error sending verification code:', error);
     return {

@@ -68,7 +68,7 @@ export const step4Schema = z.object({
     'Retailer',
     'Small Business',
     'Wholesaler'
-  ], { required_error: 'Please select a company type' }),
+  ], { message: 'Please select a company type' }),
   annualRevenue: z.enum([
     'Under $100K',
     '$100K - $500K',
@@ -78,7 +78,7 @@ export const step4Schema = z.object({
     '$10M - $50M',
     '$50M+',
     'Prefer not to say'
-  ], { required_error: 'Please select an annual revenue range' }),
+  ], { message: 'Please select an annual revenue range' }),
   website: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
 });
 
@@ -97,7 +97,7 @@ export const step5Schema = z.object({
 
 // Step 6: Product Launch Experience
 export const step6Schema = z.object({
-  hasLaunchedProduct: z.boolean({ required_error: 'Please select an option' }),
+  hasLaunchedProduct: z.boolean({ message: 'Please select an option' }),
 });
 
 // Step 7: Interested Categories

@@ -211,7 +211,7 @@ export default function ManufacturerStepper() {
           toast.success('Verification code sent to your email');
           setCurrentStep(currentStep + 1);
         } else {
-          toast.error(result.error);
+          toast.error('error' in result ? result.error : 'Failed to send verification code');
         }
       } else if (currentStep === 2) {
         // Step 2: Verify email code
@@ -220,7 +220,7 @@ export default function ManufacturerStepper() {
           toast.success('Email verified successfully');
           setCurrentStep(currentStep + 1);
         } else {
-          toast.error(result.error);
+          toast.error('error' in result ? result.error : 'Failed to verify email');
         }
       } else if (currentStep === 11) {
         // Final step: Create supplier account
@@ -235,14 +235,14 @@ export default function ManufacturerStepper() {
           companyName: formData.companyName,
           address: formData.address,
           website: formData.website,
-          companyType: formData.companyType,
-          userRole: formData.userRole,
-          teamSize: formData.teamSize,
-          annualRevenue: formData.annualRevenue,
+          companyType: formData.companyType as 'Distributor' | 'Manufacturer' | 'Packaging Supplier' | 'Raw Ingredient Supplier' | 'Service Provider' | 'Sourcing Agency',
+          userRole: formData.userRole as 'Founder/CEO' | 'Senior-Level Management' | 'Mid-Level Management' | 'Junior-Level' | 'Intern' | 'Sales Manager' | 'Export Manager' | 'Other',
+          teamSize: formData.teamSize as '1-10' | '11-50' | '51-100' | '101-500' | '501-1000' | '1000+',
+          annualRevenue: formData.annualRevenue as 'under-100k' | '100k-250k' | '250k-1m' | '1m-5m' | '5m-10m' | '10m-50m' | '50m+',
           offerings: formData.offerings,
           productionTypes: formData.productionTypes,
           moqQuantities: formData.moqQuantities,
-          productionOutsourcing: formData.productionOutsourcing,
+          productionOutsourcing: formData.productionOutsourcing as 'Inhouse' | 'Outsourced',
           manufacturingCountries: formData.manufacturingCountries,
           supportGoals: formData.supportGoals,
           companyDescription: formData.companyDescription,
@@ -266,7 +266,7 @@ export default function ManufacturerStepper() {
             router.push('/auth/signin');
           }
         } else {
-          toast.error(result.error);
+          toast.error('error' in result ? result.error : 'Failed to create account');
         }
       } else {
         // Regular step progression

@@ -1,19 +1,12 @@
 import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { DrizzleAdapter } from '@auth/drizzle-adapter';
 import { db } from '@/lib/db';
-import { users, accounts, sessions, verificationTokens } from '@/lib/db/schema';
+import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import { loginSchema } from '@/lib/validations/auth';
 
 export const authOptions: NextAuthOptions = {
-  adapter: DrizzleAdapter(db, {
-    usersTable: users,
-    accountsTable: accounts,
-    sessionsTable: sessions,
-    verificationTokensTable: verificationTokens,
-  }),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -67,7 +60,6 @@ export const authOptions: NextAuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
-    signUp: '/auth/signup',
   },
   callbacks: {
     async jwt({ token, user }) {
