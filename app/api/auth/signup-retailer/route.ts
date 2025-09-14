@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       success: true,
       message: 'Account created successfully',
       data: {
-        ...result.data,
         shouldRedirect: true,
         redirectUrl: '/dashboard/retailer'
       },
