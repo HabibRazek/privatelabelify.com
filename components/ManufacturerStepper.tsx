@@ -1,16 +1,20 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Check, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Check, MapPin, Loader2 } from 'lucide-react';
 import Image from 'next/image';
 import worldCountries from 'world-countries';
 import ReactCountryFlag from 'react-country-flag';
+import { sendEmailVerificationCode, verifyEmailCode, createSupplierAccount } from '@/lib/actions/auth';
+import { toast } from 'sonner';
 
 interface Step {
   id: number;
@@ -38,8 +42,10 @@ const countries: Country[] = worldCountries
 
 
 export default function ManufacturerStepper() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<Country>(
     countries.find(c => c.code === 'DE') || countries[0]
   ); // Default to Germany
@@ -192,14 +198,85 @@ export default function ManufacturerStepper() {
     }
   };
 
-  const handleNext = () => {
-    if (currentStep === 11 && canContinue()) {
-      // Handle form completion
-      console.log('Form completed with data:', formData);
-      alert('Manufacturer registration completed successfully!');
-      // Here you would typically submit the form data to your backend
-    } else if (currentStep < steps.length && canContinue()) {
-      setCurrentStep(currentStep + 1);
+  const handleNext = async () => {
+    if (!canContinue() || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      if (currentStep === 1) {
+        // Step 1: Send verification email
+        const result = await sendEmailVerificationCode(formData.businessEmail);
+        if (result.success) {
+          toast.success('Verification code sent to your email');
+          setCurrentStep(currentStep + 1);
+        } else {
+          toast.error(result.error);
+        }
+      } else if (currentStep === 2) {
+        // Step 2: Verify email code
+        const result = await verifyEmailCode(formData.businessEmail, formData.otp);
+        if (result.success) {
+          toast.success('Email verified successfully');
+          setCurrentStep(currentStep + 1);
+        } else {
+          toast.error(result.error);
+        }
+      } else if (currentStep === 11) {
+        // Final step: Create supplier account
+        const supplierData = {
+          email: formData.businessEmail,
+          password: formData.password,
+          otp: formData.otp,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+          phoneCountryCode: selectedCountry.dialCode,
+          companyName: formData.companyName,
+          address: formData.address,
+          website: formData.website,
+          companyType: formData.companyType,
+          userRole: formData.userRole,
+          teamSize: formData.teamSize,
+          annualRevenue: formData.annualRevenue,
+          offerings: formData.offerings,
+          productionTypes: formData.productionTypes,
+          moqQuantities: formData.moqQuantities,
+          productionOutsourcing: formData.productionOutsourcing,
+          manufacturingCountries: formData.manufacturingCountries,
+          supportGoals: formData.supportGoals,
+          companyDescription: formData.companyDescription,
+        };
+
+        const result = await createSupplierAccount(supplierData);
+        if (result.success) {
+          toast.success('Account created successfully!');
+
+          // Sign in the user
+          const signInResult = await signIn('credentials', {
+            email: formData.businessEmail,
+            password: formData.password,
+            redirect: false,
+          });
+
+          if (signInResult?.ok) {
+            router.push('/dashboard/manufacturer');
+          } else {
+            toast.error('Account created but failed to sign in. Please try logging in manually.');
+            router.push('/auth/signin');
+          }
+        } else {
+          toast.error(result.error);
+        }
+      } else {
+        // Regular step progression
+        setCurrentStep(currentStep + 1);
+      }
+    } catch (error) {
+      console.error('Error in handleNext:', error);
+      toast.error('An unexpected error occurred');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -1099,14 +1176,23 @@ export default function ManufacturerStepper() {
 
             <Button
               onClick={handleNext}
-              disabled={currentStep === steps.length || !canContinue()}
+              disabled={!canContinue() || isLoading}
               className={`flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed ${currentStep === 11
-                  ? 'bg-gray-500 hover:bg-gray-600 text-white'
+                  ? 'bg-green-600 hover:bg-green-700 text-white'
                   : 'bg-blue-800 hover:bg-blue-900 text-white'
                 }`}
             >
-              <span>{currentStep === 11 ? 'Complete' : 'Continue'}</span>
-              <ChevronRight className="h-4 w-4" />
+              {isLoading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>Processing...</span>
+                </>
+              ) : (
+                <>
+                  <span>{currentStep === 11 ? 'Complete Registration' : 'Continue'}</span>
+                  <ChevronRight className="h-4 w-4" />
+                </>
+              )}
             </Button>
           </div>
         </div>

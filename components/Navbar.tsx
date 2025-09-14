@@ -52,7 +52,10 @@ export default function Navbar() {
 
           {/* Right Side - Auth Buttons */}
           <div className="hidden md:flex items-center space-x-3 lg:space-x-4">
-            <button className="text-sm text-gray-700 hover:text-blue-800 transition-colors font-medium">
+            <button
+              onClick={() => router.push('/auth/signin')}
+              className="text-sm text-gray-700 hover:text-blue-800 transition-colors font-medium"
+            >
               Login
             </button>
             <Button
@@ -144,7 +147,13 @@ export default function Navbar() {
 
                 {/* Bottom Actions */}
                 <div className="p-6 border-t border-gray-100 space-y-3">
-                  <button className="w-full text-center py-3 px-4 text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg font-medium transition-all duration-200">
+                  <button
+                    onClick={() => {
+                      router.push('/auth/signin');
+                      setIsMenuOpen(false);
+                    }}
+                    className="w-full text-center py-3 px-4 text-gray-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg font-medium transition-all duration-200"
+                  >
                     Login
                   </button>
                   <Button

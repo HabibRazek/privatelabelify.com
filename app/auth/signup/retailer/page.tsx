@@ -1,16 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AddressAutocomplete } from "@/components/ui/address-autocomplete";
-import { Eye, EyeOff, Check, RotateCcw, Info, ChevronLeft, ChevronRight } from "lucide-react";
+import { Eye, EyeOff, Check, RotateCcw, Info, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import Image from 'next/image';
 import worldCountries from 'world-countries';
 import ReactCountryFlag from 'react-country-flag';
+import { toast } from 'sonner';
+import {
+  step1Schema,
+  step2Schema,
+  step3Schema,
+  step4Schema,
+  step5Schema,
+  step6Schema,
+  step7Schema,
+  type RetailerSignupData
+} from '@/lib/validations/auth';
 
 interface Country {
   code: string;
@@ -29,8 +42,19 @@ const countries: Country[] = worldCountries
   .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically
 
 export default function RetailerSignupPage() {
+  const router = useRouter();
+  const { data: session, status } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [generatedOTP, setGeneratedOTP] = useState<string>('');
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/dashboard/retailer');
+    }
+  }, [status, session, router]);
   const [selectedCountry, setSelectedCountry] = useState<Country>(
     countries.find(c => c.code === 'US') || countries[0]
   ); // Default to US
@@ -53,6 +77,7 @@ export default function RetailerSignupPage() {
     autoCreateRequest: true,
     getDirectIntroductions: true,
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Password validation rules
   const passwordRules = [
@@ -92,10 +117,219 @@ export default function RetailerSignupPage() {
     setFormData(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
-  const handleContinue = () => {
-    // Validate form and move to next step
-    if (currentStep < 8) {
-      setCurrentStep(currentStep + 1);
+  // Send email verification
+  const sendEmailVerification = async () => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const response = await fetch('/api/auth/send-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Verification code sent to your email');
+        // Store the generated OTP for display (development only)
+        if (result.otp) {
+          setGeneratedOTP(result.otp);
+        }
+        setCurrentStep(2);
+      } else {
+        toast.error(result.error || 'Failed to send verification code');
+        if (result.details) {
+          setErrors(result.details);
+        }
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Verify email code
+  const verifyEmailCode = async () => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const response = await fetch('/api/auth/verify-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, code: formData.otp }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Email verified successfully');
+        setCurrentStep(3);
+      } else {
+        toast.error(result.error || 'Invalid verification code');
+        if (result.details) {
+          setErrors(result.details);
+        }
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Complete signup
+  const completeSignup = async () => {
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const signupData: RetailerSignupData = {
+        email: formData.email,
+        password: formData.password,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        phone: formData.phone,
+        phoneCountryCode: selectedCountry.dialCode,
+        companyName: formData.companyName,
+        address: formData.address,
+        companyType: formData.companyType as 'Agency' | 'Consultant' | 'Corporation' | 'Creator' | 'D2C Brand' | 'Importer' | 'Marketplace' | 'Online Retailer' | 'Retailer' | 'Small Business' | 'Wholesaler',
+        annualRevenue: formData.annualRevenue as 'Under $100K' | '$100K - $500K' | '$500K - $1M' | '$1M - $5M' | '$5M - $10M' | '$10M - $50M' | '$50M+' | 'Prefer not to say',
+        website: formData.website,
+        businessGoals: formData.businessGoals as ('Find suppliers' | 'Source products' | 'Source packaging' | 'Source raw materials' | 'Manage suppliers' | 'Finance inventory' | 'Streamline sourcing')[],
+        hasLaunchedProduct: formData.hasLaunchedProduct!,
+        interestedCategories: formData.interestedCategories as ('Beauty & Personal Care' | 'Fashion' | 'Food & Beverages' | 'Health & Supplements' | 'Home & Living' | 'Pet Supplies' | 'Packaging')[],
+        productDescription: formData.productDescription,
+        autoCreateRequest: formData.autoCreateRequest,
+        getDirectIntroductions: formData.getDirectIntroductions,
+      };
+
+      const response = await fetch('/api/auth/signup-retailer', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(signupData),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success('Account created successfully! Redirecting to dashboard...');
+        setTimeout(() => {
+          router.push('/dashboard/retailer');
+        }, 2000);
+      } else {
+        toast.error(result.error || 'Failed to create account');
+        if (result.details) {
+          setErrors(result.details);
+        }
+      }
+    } catch {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleContinue = async () => {
+    setErrors({});
+
+    // Validate current step
+    if (currentStep === 1) {
+      const validation = step1Schema.safeParse({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (!validation.success) {
+        const fieldErrors: Record<string, string> = {};
+        validation.error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+        return;
+      }
+
+      await sendEmailVerification();
+    } else if (currentStep === 2) {
+      const validation = step2Schema.safeParse({
+        email: formData.email,
+        otp: formData.otp,
+      });
+
+      if (!validation.success) {
+        const fieldErrors: Record<string, string> = {};
+        validation.error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+        return;
+      }
+
+      await verifyEmailCode();
+    } else if (currentStep === 8) {
+      await completeSignup();
+    } else {
+      // Validate other steps and move forward
+      let validation;
+
+      switch (currentStep) {
+        case 3:
+          validation = step3Schema.safeParse({
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            phone: formData.phone,
+            phoneCountryCode: selectedCountry.dialCode,
+          });
+          break;
+        case 4:
+          validation = step4Schema.safeParse({
+            companyName: formData.companyName,
+            address: formData.address,
+            companyType: formData.companyType,
+            annualRevenue: formData.annualRevenue,
+            website: formData.website,
+          });
+          break;
+        case 5:
+          validation = step5Schema.safeParse({
+            businessGoals: formData.businessGoals,
+          });
+          break;
+        case 6:
+          validation = step6Schema.safeParse({
+            hasLaunchedProduct: formData.hasLaunchedProduct,
+          });
+          break;
+        case 7:
+          validation = step7Schema.safeParse({
+            interestedCategories: formData.interestedCategories,
+          });
+          break;
+        default:
+          validation = { success: true };
+      }
+
+      if (validation && !validation.success && validation.error) {
+        const fieldErrors: Record<string, string> = {};
+        validation.error.issues.forEach((issue) => {
+          if (issue.path[0]) {
+            fieldErrors[issue.path[0] as string] = issue.message;
+          }
+        });
+        setErrors(fieldErrors);
+        return;
+      }
+
+      if (currentStep < 8) {
+        setCurrentStep(currentStep + 1);
+      }
     }
   };
 
@@ -105,9 +339,8 @@ export default function RetailerSignupPage() {
     }
   };
 
-  const handleResendCode = () => {
-    // Simulate resending OTP code
-    console.log('Resending OTP code to:', formData.email);
+  const handleResendCode = async () => {
+    await sendEmailVerification();
   };
 
   const isPasswordValid = passwordRules.every(rule => rule.check);
@@ -240,8 +473,11 @@ export default function RetailerSignupPage() {
                     placeholder="name@company.com"
                     value={formData.email}
                     onChange={(e) => handleInputChange('email', e.target.value)}
-                    className="w-full"
+                    className={`w-full ${errors.email ? 'border-red-500' : ''}`}
                   />
+                  {errors.email && (
+                    <p className="text-xs text-red-600">{errors.email}</p>
+                  )}
                 </div>
 
                 {/* Password */}
@@ -256,7 +492,7 @@ export default function RetailerSignupPage() {
                       placeholder="Set password"
                       value={formData.password}
                       onChange={(e) => handleInputChange('password', e.target.value)}
-                      className="w-full pr-10"
+                      className={`w-full pr-10 ${errors.password ? 'border-red-500' : ''}`}
                     />
                     <button
                       type="button"
@@ -266,6 +502,9 @@ export default function RetailerSignupPage() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {errors.password && (
+                    <p className="text-xs text-red-600">{errors.password}</p>
+                  )}
                 </div>
 
                 {/* Password Requirements */}
@@ -288,7 +527,7 @@ export default function RetailerSignupPage() {
             ) : currentStep === 2 ? (
               <>
                 {/* OTP Input */}
-                <div className="flex justify-center mb-6">
+                <div className="flex flex-col items-center mb-6">
                   <InputOTP
                     maxLength={4}
                     value={formData.otp}
@@ -301,9 +540,27 @@ export default function RetailerSignupPage() {
                       <InputOTPSlot index={3} className="w-12 h-12 text-lg" />
                     </InputOTPGroup>
                   </InputOTP>
+                  {errors.otp && (
+                    <p className="text-xs text-red-600 mt-2">{errors.otp}</p>
+                  )}
                 </div>
 
 
+
+                {/* OTP Display for Testing */}
+                {generatedOTP && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                    <p className="text-sm text-yellow-800 font-medium">
+                      🔧 Development Mode - Your OTP Code:
+                    </p>
+                    <p className="text-lg font-bold text-yellow-900 mt-1">
+                      {generatedOTP}
+                    </p>
+                    <p className="text-xs text-yellow-700 mt-1">
+                      (This will be hidden in production)
+                    </p>
+                  </div>
+                )}
 
                 {/* Resend Code */}
                 <div className="text-center space-y-2">
@@ -709,6 +966,7 @@ export default function RetailerSignupPage() {
             <Button
               onClick={handleContinue}
               disabled={
+                isLoading ||
                 (currentStep === 1 && !canContinueStep1) ||
                 (currentStep === 2 && !canContinueStep2) ||
                 (currentStep === 3 && !canContinueStep3) ||
@@ -720,8 +978,13 @@ export default function RetailerSignupPage() {
               }
               className="flex items-center space-x-2 bg-blue-800 hover:bg-blue-900 text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>{currentStep === 8 ? 'Complete' : 'Continue'}</span>
-              <ChevronRight className="h-4 w-4" />
+              {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>
+                {currentStep === 1 ? 'Send Code' :
+                 currentStep === 2 ? 'Verify Email' :
+                 currentStep === 8 ? 'Complete Signup' : 'Continue'}
+              </span>
+              {!isLoading && <ChevronRight className="h-4 w-4" />}
             </Button>
           </div>
         </div>

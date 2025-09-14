@@ -1,7 +1,19 @@
-import NextAuth from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import { DrizzleAdapter } from '@auth/drizzle-adapter';
+import { db } from '@/lib/db';
+import { users, accounts, sessions, verificationTokens } from '@/lib/db/schema';
+import { eq } from 'drizzle-orm';
+import bcrypt from 'bcryptjs';
+import { loginSchema } from '@/lib/validations/auth';
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const authOptions: NextAuthOptions = {
+  adapter: DrizzleAdapter(db, {
+    usersTable: users,
+    accountsTable: accounts,
+    sessionsTable: sessions,
+    verificationTokensTable: verificationTokens,
+  }),
   providers: [
     CredentialsProvider({
       name: 'credentials',
@@ -10,17 +22,52 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        // Simplified auth for now - just return null to prevent login
-        // This will be properly implemented when the database is set up
-        return null;
+        try {
+          // Validate credentials
+          const validatedFields = loginSchema.safeParse(credentials);
+          if (!validatedFields.success) {
+            return null;
+          }
+
+          const { email, password } = validatedFields.data;
+
+          // Find user in database
+          const user = await db.select().from(users).where(eq(users.email, email)).limit(1);
+
+          if (!user.length || !user[0].password) {
+            return null;
+          }
+
+          // Verify password
+          const passwordsMatch = await bcrypt.compare(password, user[0].password);
+
+          if (!passwordsMatch) {
+            return null;
+          }
+
+          // Return user object
+          return {
+            id: user[0].id,
+            email: user[0].email,
+            firstName: user[0].firstName,
+            lastName: user[0].lastName,
+            role: user[0].role,
+            emailVerified: user[0].emailVerified,
+          };
+        } catch (error) {
+          console.error('Auth error:', error);
+          return null;
+        }
       },
     }),
   ],
   session: {
     strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   pages: {
     signIn: '/auth/signin',
+    signUp: '/auth/signup',
   },
   callbacks: {
     async jwt({ token, user }) {
@@ -28,6 +75,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.id = user.id;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.role = user.role;
+        token.emailVerified = user.emailVerified;
       }
       return token;
     },
@@ -36,8 +85,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.firstName = token.firstName as string;
         session.user.lastName = token.lastName as string;
+        session.user.role = token.role as string;
+        session.user.emailVerified = token.emailVerified as Date | null;
       }
       return session;
     },
   },
-});
+  events: {
+    async signIn({ user, isNewUser }) {
+      if (isNewUser) {
+        console.log(`New user signed up: ${user.email}`);
+      }
+    },
+  },
+  debug: process.env.NODE_ENV === 'development',
+};
+
+

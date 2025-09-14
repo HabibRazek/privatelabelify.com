@@ -28,10 +28,10 @@ export default function HowItWorks() {
   ];
 
   return (
-    <section className="py-20">
+    <section className="py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-10">
           <h2 className="text-3xl font-bold text-blue-800 mb-3">
             From Idea to Market in Minutes
           </h2>
@@ -45,7 +45,7 @@ export default function HowItWorks() {
           {steps.map((step) => (
             <div key={step.id} className="text-center">
               {/* GIF Container */}
-              <div className="relative mb-8 overflow-hidden">
+              <div className="relative mb-6 overflow-hidden">
                 <div className="w-[300px] h-[300px] relative mx-auto">
                   {/* Fallback Background */}
                   <div className="absolute inset-0 bg-gray-50 flex items-center justify-center">

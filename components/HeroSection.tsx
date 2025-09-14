@@ -1,10 +1,11 @@
 'use client';
+
 import { Button } from "@/components/ui/button";
 import { UserPlus, CheckCircle, Globe, Shield, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import Image, { type StaticImageData } from "next/image";
 
-// Import images directly (adjust paths as needed)
+// Product images
 import Image1 from "@/public/privatelabel-products/1.jpeg";
 import Image2 from "@/public/privatelabel-products/2.jpeg";
 import Image3 from "@/public/privatelabel-products/3.jpeg";
@@ -14,32 +15,69 @@ import Image6 from "@/public/privatelabel-products/6.jpeg";
 import Image7 from "@/public/privatelabel-products/7.jpeg";
 import Image8 from "@/public/privatelabel-products/8.jpeg";
 
+// Hero bottom image
+import PrivateLabelImage from "@/public/hero-section/make your private label.png";
+
+// Types
+interface ProductImage {
+  src: StaticImageData;
+  alt: string;
+}
+
+interface TrustIndicator {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  description: string;
+  iconColor: string;
+}
+
 export default function HeroSection() {
   const router = useRouter();
 
-  // Left column images (1, 2, 3, 4)
-  const leftColumnImages = [
-    { src: Image1 || "/placeholder1.jpg", alt: "Private Label Product 1" },
-    { src: Image2 || "/placeholder2.jpg", alt: "Private Label Product 2" },
-    { src: Image3 || "/placeholder3.jpg", alt: "Private Label Product 3" },
-    { src: Image4 || "/placeholder4.jpg", alt: "Private Label Product 4" },
+  // Trust indicators data
+  const trustIndicators: TrustIndicator[] = [
+    {
+      icon: CheckCircle,
+      title: "Verified Manufacturers",
+      description: "Quality assured",
+      iconColor: "text-green-500"
+    },
+    {
+      icon: Shield,
+      title: "Low MOQs",
+      description: "Start small",
+      iconColor: "text-blue-500"
+    },
+    {
+      icon: Globe,
+      title: "Global Reach",
+      description: "MENA + Worldwide",
+      iconColor: "text-purple-500"
+    }
   ];
 
-  // Right column images (8, 9, 11, 12) - using available images
-  const rightColumnImages = [
-    { src: Image8 || "/placeholder8.jpg", alt: "Private Label Product 8" },
-    { src: Image5 || "/placeholder9.jpg", alt: "Private Label Product 9" },
-    { src: Image6 || "/placeholder11.jpg", alt: "Private Label Product 11" },
-    { src: Image7 || "/placeholder12.jpg", alt: "Private Label Product 12" },
+  // Product images configuration
+  const leftColumnImages: ProductImage[] = [
+    { src: Image1, alt: "Private Label Product 1" },
+    { src: Image2, alt: "Private Label Product 2" },
+    { src: Image3, alt: "Private Label Product 3" },
+    { src: Image4, alt: "Private Label Product 4" },
   ];
 
-  // Create longer arrays for smooth infinite scroll without visible repetition
-  const leftScrollImages = [...leftColumnImages, ...leftColumnImages, ...leftColumnImages, ...leftColumnImages];
-  const rightScrollImages = [...rightColumnImages, ...rightColumnImages, ...rightColumnImages, ...rightColumnImages];
+  const rightColumnImages: ProductImage[] = [
+    { src: Image8, alt: "Private Label Product 8" },
+    { src: Image5, alt: "Private Label Product 5" },
+    { src: Image6, alt: "Private Label Product 6" },
+    { src: Image7, alt: "Private Label Product 7" },
+  ];
+
+  // Create arrays for smooth infinite scroll
+  const leftScrollImages = Array(4).fill(leftColumnImages).flat();
+  const rightScrollImages = Array(4).fill(rightColumnImages).flat();
 
   return (
     <section className="relative min-h-screen flex items-center pt-16">
-      <div className="relative z-10 w-full max-w-none px-4 py-20">
+      <div className="relative z-10 w-full max-w-none px-4 py-12">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16 items-center">
 
@@ -82,30 +120,20 @@ export default function HeroSection() {
             </div>
 
             {/* Trust Indicators */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-6 pt-6 lg:pt-8">
-              <div className="flex items-center space-x-3">
-                <CheckCircle className="w-6 h-6 text-green-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm lg:text-base">Verified Manufacturers</p>
-                  <p className="text-gray-600 text-sm">Quality assured</p>
+            <div className="grid grid-cols-3 sm:grid-cols-3 gap-1 sm:gap-4 lg:gap-6 pt-4 lg:pt-6">
+              {trustIndicators.map((indicator, index) => (
+                <div key={index} className="flex flex-col items-center text-center sm:flex-row sm:items-center sm:text-left sm:space-x-3">
+                  <indicator.icon className={`w-3 h-3 sm:w-5 sm:h-5 lg:w-6 lg:h-6 ${indicator.iconColor} flex-shrink-0 mb-1 sm:mb-0`} />
+                  <div className="min-w-0">
+                    <p className="font-semibold text-gray-900 text-xs sm:text-sm lg:text-base leading-tight">
+                      {indicator.title}
+                    </p>
+                    <p className="text-gray-600 text-xs sm:text-sm leading-tight">
+                      {indicator.description}
+                    </p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Shield className="w-6 h-6 text-blue-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm lg:text-base">Low MOQs</p>
-                  <p className="text-gray-600 text-sm">Start small</p>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3">
-                <Globe className="w-6 h-6 text-purple-500 flex-shrink-0" />
-                <div>
-                  <p className="font-semibold text-gray-900 text-sm lg:text-base">Global Reach</p>
-                  <p className="text-gray-600 text-sm">MENA + Worldwide</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -156,7 +184,20 @@ export default function HeroSection() {
             <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none z-10"></div>
           </div>
         </div>
-      </div>
+        </div>
+
+        {/* Bottom Private Label Image - Mobile Only */}
+        <div className="block sm:hidden w-full max-w-sm mx-auto mt-6 px-4">
+          <div className="relative rounded-xl overflow-hidden shadow-lg">
+            <Image
+              src={PrivateLabelImage}
+              alt="Make Your Private Label"
+              className="w-full h-auto object-cover"
+              priority
+              placeholder="blur"
+            />
+          </div>
+        </div>
       </div>
     </section>
   );

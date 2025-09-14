@@ -5,12 +5,83 @@ import { motion } from "framer-motion";
 
 export default function WhyChooseUs() {
   return (
-    <section className="py-20">
+    <section className="py-12">
       <div className="max-w-9/12 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
-          {/* Image on the left - Takes 2 columns */}
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-8 lg:items-center">
+          {/* Text content - First on mobile, right side on desktop */}
           <motion.div
-            className="lg:col-span-2 flex justify-center lg:justify-start"
+            className="order-1 lg:order-2 lg:col-span-1 space-y-6"
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
+            <div className="text-center">
+              <p className="text-blue-800 text-xs font-semibold uppercase tracking-wide mb-2">
+                Why Choose Us
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                Why Entrepreneurs Choose PrivateLabelOne
+              </h2>
+              <p className="text-sm text-gray-600">
+                Join thousands of successful entrepreneurs who trust us to bring their private label products to market
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Fast to Market */}
+              <motion.div
+                className="p-3 text-center lg:text-left"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  Rapid Market Entry
+                </h3>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Accelerate your time-to-market with our streamlined manufacturing process. No factory investment required—simply select, customize, and launch your products.
+                </p>
+              </motion.div>
+
+              {/* Your Brand, Your Identity */}
+              <motion.div
+                className="p-3 text-center lg:text-left"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.5 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  Complete Brand Control
+                </h3>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Maintain full ownership of your brand identity with our comprehensive design platform. Create custom packaging, logos, and product specifications that reflect your vision.
+                </p>
+              </motion.div>
+
+              {/* Global Opportunities */}
+              <motion.div
+                className="p-3 text-center lg:text-left"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <h3 className="text-base font-bold text-gray-900 mb-1">
+                  Global Market Access
+                </h3>
+                <p className="text-xs text-gray-600 leading-relaxed">
+                  Scale your business internationally with our extensive network of manufacturing partners and distribution channels across multiple continents.
+                </p>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Image section - Bottom on mobile, left side on desktop */}
+          <motion.div
+            className="order-2 lg:order-1 lg:col-span-2 flex justify-center lg:justify-start"
             initial={{ opacity: 0, y: 200, scale: 0.8 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
             transition={{
@@ -61,77 +132,6 @@ export default function WhyChooseUs() {
                 />
               </motion.div>
             </motion.div>
-          </motion.div>
-
-          {/* Text content on the right - Takes 1 column */}
-          <motion.div
-            className="lg:col-span-1 space-y-6"
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <div className="text-center lg:text-left">
-              <p className="text-blue-800 text-xs font-semibold uppercase tracking-wide mb-2">
-                Why Choose Us
-              </p>
-              <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
-                Why Entrepreneurs Choose PrivateLabelOne
-              </h2>
-              <p className="text-sm text-gray-600">
-                Join thousands of successful entrepreneurs who trust us to bring their private label products to market
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              {/* Fast to Market */}
-              <motion.div
-                className="p-3"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-base font-bold text-gray-900 mb-1">
-                  Rapid Market Entry
-                </h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Accelerate your time-to-market with our streamlined manufacturing process. No factory investment required—simply select, customize, and launch your products.
-                </p>
-              </motion.div>
-
-              {/* Your Brand, Your Identity */}
-              <motion.div
-                className="p-3"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-base font-bold text-gray-900 mb-1">
-                  Complete Brand Control
-                </h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Maintain full ownership of your brand identity with our comprehensive design platform. Create custom packaging, logos, and product specifications that reflect your vision.
-                </p>
-              </motion.div>
-
-              {/* Global Opportunities */}
-              <motion.div
-                className="p-3"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="text-base font-bold text-gray-900 mb-1">
-                  Global Market Access
-                </h3>
-                <p className="text-xs text-gray-600 leading-relaxed">
-                  Scale your business internationally with our extensive network of manufacturing partners and distribution channels across multiple continents.
-                </p>
-              </motion.div>
-            </div>
           </motion.div>
         </div>
       </div>

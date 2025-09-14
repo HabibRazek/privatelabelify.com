@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Email Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #1e40af;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d1fae5;
+            color: #065f46;
+            border: 1px solid #10b981;
+        }
+        .error {
+            background-color: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Complete Signup Flow</h1>
+    <p>This page tests the complete signup flow including email verification and account creation.</p>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" value="habibrazeg23@gmail.com" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" value="TestPassword123!" required>
+        </div>
+        
+        <button type="submit">Send Verification Code</button>
+    </form>
+
+    <div id="result"></div>
+
+    <hr style="margin: 40px 0;">
+
+    <h2>Test Complete Account Creation</h2>
+    <form id="createAccountForm">
+        <div class="form-group">
+            <label for="createEmail">Email Address:</label>
+            <input type="email" id="createEmail" name="email" value="habibrazeg23@gmail.com" required>
+        </div>
+
+        <div class="form-group">
+            <label for="createPassword">Password:</label>
+            <input type="password" id="createPassword" name="password" value="TestPassword123!" required>
+        </div>
+
+        <div class="form-group">
+            <label for="verificationCode">Verification Code:</label>
+            <input type="text" id="verificationCode" name="code" placeholder="Enter 4-digit code" required>
+        </div>
+
+        <button type="submit">Create Complete Account</button>
+    </form>
+
+    <div id="createResult"></div>
+
+    <script>
+        document.getElementById('testForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const resultDiv = document.getElementById('result');
+            
+            resultDiv.innerHTML = '<p>Sending verification code...</p>';
+            
+            try {
+                const response = await fetch('/api/auth/send-verification', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <p>✅ Success! Verification code sent to ${email}</p>
+                            ${data.otp ? `<p><strong>OTP Code (for testing): ${data.otp}</strong></p>` : ''}
+                            <p>Message: ${data.message}</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <p>❌ Error: ${data.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ Network Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+
+        // Complete account creation test
+        document.getElementById('createAccountForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('createEmail').value;
+            const password = document.getElementById('createPassword').value;
+            const code = document.getElementById('verificationCode').value;
+            const resultDiv = document.getElementById('createResult');
+
+            resultDiv.innerHTML = '<p>Creating account...</p>';
+
+            try {
+                // First verify the email code
+                const verifyResponse = await fetch('/api/auth/verify-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, code })
+                });
+
+                const verifyData = await verifyResponse.json();
+
+                if (!verifyData.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <p>❌ Email verification failed: ${verifyData.error}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                // Create complete account with sample data
+                const accountData = {
+                    email,
+                    password,
+                    firstName: "Test",
+                    lastName: "User",
+                    phone: "+1234567890",
+                    phoneCountryCode: "US",
+                    companyName: "Test Company LLC",
+                    address: "123 Test Street, Test City, TC 12345",
+                    companyType: "Corporation",
+                    annualRevenue: "$100K - $500K",
+                    website: "https://testcompany.com",
+                    businessGoals: ["Find suppliers", "Source products"],
+                    hasLaunchedProduct: true,
+                    interestedCategories: ["Beauty & Personal Care", "Home & Living"],
+                    productDescription: "Test product description for testing purposes",
+                    autoCreateRequest: true,
+                    getDirectIntroductions: true
+                };
+
+                const createResponse = await fetch('/api/auth/signup-retailer', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(accountData)
+                });
+
+                const createData = await createResponse.json();
+
+                if (createData.success) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            <p>✅ Success! Account created successfully!</p>
+                            <p>User ID: ${createData.data?.userId}</p>
+                            <p>All stepper data has been saved to the database.</p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            <p>❌ Account creation failed: ${createData.error}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        <p>❌ Network Error: ${error.message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
