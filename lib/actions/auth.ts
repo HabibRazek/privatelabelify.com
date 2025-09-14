@@ -14,8 +14,7 @@ import {
   type ApiSuccess,
   type ApiError
 } from '@/lib/validations/auth';
-import { signIn } from '@/lib/auth';
-import { AuthError } from 'next-auth';
+
 import { sendVerificationEmail } from '@/lib/email';
 
 // Generate random 4-digit OTP
@@ -253,26 +252,7 @@ export async function createRetailerAccount(data: RetailerSignupData): Promise<A
   }
 }
 
-// Sign in user after account creation
-export async function signInUser(email: string, password: string): Promise<ApiSuccess | ApiError> {
-  try {
-    // Return success with redirect instruction
-    return {
-      success: true,
-      message: 'Account created successfully',
-      data: {
-        shouldRedirect: true,
-        redirectUrl: '/dashboard/retailer'
-      }
-    };
-  } catch (error) {
-    console.error('Error signing in user:', error);
-    return {
-      success: false,
-      error: 'Failed to sign in',
-    };
-  }
-}
+
 
 // Resend verification code
 export async function resendVerificationCode(email: string): Promise<ApiSuccess | ApiError> {
